@@ -15,7 +15,7 @@ public class client {
 //        byteBuffer.put(hello);
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.connect(new InetSocketAddress("localhost",9090));
-        socketChannel.write(Charset.defaultCharset().encode("hello"));
+        //socketChannel.write(Charset.defaultCharset().encode("hello"));
         System.out.println("waiting...");
     }
 }

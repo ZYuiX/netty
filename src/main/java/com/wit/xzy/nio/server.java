@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -16,30 +19,35 @@ import java.util.List;
 @Slf4j
 public class server {
     public static void main(String[] args) throws IOException {
-
         ByteBuffer byteBuffer = ByteBuffer.allocate(15);
-        //1.开启服务器并监听端口
+
         ServerSocketChannel channel = ServerSocketChannel.open();
+        channel.configureBlocking(false);
+        //1.创建selector
+        Selector selector = Selector.open();
+        //2.将selector与channel关联。SelectionKey就是将来事件发生后，通过这个key可以知道事件和是那个channel的事件
+        SelectionKey ssckey = channel.register(selector, 0, null);
+        ssckey.interestOps(SelectionKey.OP_ACCEPT);//指定selector关注的事件类型
+
         channel.bind(new InetSocketAddress(9090));
-        //2.连接集合
-        List<SocketChannel> channelList = new ArrayList<>();
+        log.info("register key:{}",ssckey);
         while (true){
-            //3.accpet()阻塞直到客户端发送请求
-            log.info("等待连接....");
-            SocketChannel sc = channel.accept();//
-            log.info("连接成功....{}",sc);
-            channelList.add(sc);//将该channel加入集合
-            for(SocketChannel mychannel:channelList){
-                //4.接收客户端发送的数据
-                log.info("before read.....");
-                mychannel.read(byteBuffer);//使用read()方法写入数据时，也是一种阻塞式写入，读取数据时，如果没有数据可读，通道的读取操作可能会阻塞
-                byteBuffer.flip();//切换为读状态
-                while (byteBuffer.hasRemaining()){
-                    System.out.println(byteBuffer.get());
-                }
-                byteBuffer.clear();
-                log.info("after read.....");
+            //3.select()，没有事件发生时阻塞，有时间发生回复运行。
+            //select()在事件未处理时，他不会阻塞(如果客户端连接以后，不做任何操作，那么服务端就会重复监测是否有accept()事件，可以用cancel()取消该事件。)
+            // 事件发生要么处理要么取消，不能置之不理
+            selector.select();
+            //4.处理事件，selectedKeys()内部包含了所有发生的时间。
+            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+            while (iterator.hasNext()){
+                SelectionKey key = iterator.next();
+                log.info("key:{}",key);
+                /*ServerSocketChannel serverSocketChannel = (ServerSocketChannel)key.channel();
+                SocketChannel sc = serverSocketChannel.accept();
+                log.info("{}",sc);*/
+                //key.cancel();
+
             }
+
         }
     }
 }

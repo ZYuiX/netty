@@ -29,7 +29,7 @@ public class BioServer {
                 System.out.println("线程信息"+Thread.currentThread().getId()
                         +"线程名字"+Thread.currentThread().getName());
                 //阻塞等待客户端连接
-                Socket socket = serverSocket.accept();//监听端口
+                final Socket socket = serverSocket.accept();//监听端口
                 System.out.println("等待客户端连接....");
                 executor.execute(new Runnable() {
                     @Override
