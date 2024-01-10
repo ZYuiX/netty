@@ -16,34 +16,29 @@ import java.util.List;
 @Slf4j
 public class server {
     public static void main(String[] args) throws IOException {
+
         ByteBuffer byteBuffer = ByteBuffer.allocate(15);
         //1.开启服务器并监听端口
         ServerSocketChannel channel = ServerSocketChannel.open();
-        channel.configureBlocking(false);//关闭阻塞式编程，开启非阻塞式编程。
         channel.bind(new InetSocketAddress(9090));
         //2.连接集合
         List<SocketChannel> channelList = new ArrayList<>();
         while (true){
             //3.accpet()阻塞直到客户端发送请求
             log.info("等待连接....");
-            SocketChannel sc = channel.accept();//切换成非阻塞式编程，如果没有建立连接，accept()不会阻塞，sc==null；
-            if(sc!=null){
-                log.info("连接成功....{}",sc);
-                sc.configureBlocking(false);//非阻塞模式
-                channelList.add(sc);//将该channel加入集合
-            }
+            SocketChannel sc = channel.accept();//
+            log.info("连接成功....{}",sc);
+            channelList.add(sc);//将该channel加入集合
             for(SocketChannel mychannel:channelList){
                 //4.接收客户端发送的数据
                 log.info("before read.....");
-                int read = mychannel.read(byteBuffer);//非阻塞，线程会继续运行，如果没有读到数据，read返回0;
-                if(read>0){
-                    byteBuffer.flip();//切换为读状态
-                    while (byteBuffer.hasRemaining()){
-                        System.out.println(byteBuffer.get());
-                    }
-                    byteBuffer.clear();
-                    log.info("after read.....");
+                mychannel.read(byteBuffer);//使用read()方法写入数据时，也是一种阻塞式写入，读取数据时，如果没有数据可读，通道的读取操作可能会阻塞
+                byteBuffer.flip();//切换为读状态
+                while (byteBuffer.hasRemaining()){
+                    System.out.println(byteBuffer.get());
                 }
+                byteBuffer.clear();
+                log.info("after read.....");
             }
         }
     }
