@@ -2,6 +2,7 @@ package com.wit.xzy.nio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 
@@ -15,6 +16,7 @@ public class client {
 //        byteBuffer.put(hello);
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.connect(new InetSocketAddress("localhost",9090));
+        SocketAddress address = socketChannel.getLocalAddress();
         //socketChannel.write(Charset.defaultCharset().encode("hello"));
         System.out.println("waiting...");
     }
