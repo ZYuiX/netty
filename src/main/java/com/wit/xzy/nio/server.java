@@ -9,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +44,7 @@ public class server {
                 // 否则下次有新的channel注册，触发事件，从迭代器迭代获取key时，会从集合头部获取上一个事件的key，而这个事件并没有触发，继续
                 //SocketChannel sc = channel.accept();这个地方就会报错。因此要主动移除selectedKeys()的key
                 //此例子中
-                //iterator.remove();//主动移除
+                iterator.remove();//主动移除
                 log.info("key:{}",key);
                 if(key.isAcceptable()){
                     ServerSocketChannel channel = (ServerSocketChannel)key.channel();
@@ -53,12 +54,24 @@ public class server {
                     SelectionKey selectionKey = register.interestOps(SelectionKey.OP_READ);
                     log.info("{}",sc);
                 }else  if(key.isReadable()){
-                    SocketChannel channel = (SocketChannel)key.channel();
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(15);
-                    channel.read(byteBuffer);
-                    byteBuffer.flip();
+                    try {
+                        SocketChannel channel = (SocketChannel)key.channel();
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(6);
+                        int read = channel.read(byteBuffer);//客户端正常断开，read的返回值是-1
+                        if(read==-1){
+                            key.cancel();
+                        }else {
+                            byteBuffer.flip();
+                            System.out.println(Charset.defaultCharset().decode(byteBuffer));
+
+                        }
+                    }catch (IOException e){
+                        e.printStackTrace();
+                        key.cancel();//客户端异常断开，因此需要将key取消(从selector的key集合中删除)
+                    }
+
                 }
-                //key.cancel();
+
 
             }
 
