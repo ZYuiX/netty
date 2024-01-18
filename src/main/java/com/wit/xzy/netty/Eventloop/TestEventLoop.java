@@ -9,7 +9,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
  **/
 public class TestEventLoop {
     public static void main(String[] args) {
+        //1.创建事件循环组
         EventLoopGroup eventLoopGroup = new NioEventLoopGroup();//可以管理 io 普通任务 定时任务
+
     }
 
 }
