@@ -1,7 +1,8 @@
-package com.wit.xzy.netty;
+package com.wit.xzy.netty.Eventloop;
 
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -12,9 +13,11 @@ import java.net.InetSocketAddress;
 /**
  * @Author ZongYou
  **/
-public class HelloClient {
+public class EventLoopClient {
+
     public static void main(String[] args) throws InterruptedException {
-        new Bootstrap()
+        Channel channel =
+                new Bootstrap()
                 .group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<NioSocketChannel>() {
@@ -23,9 +26,14 @@ public class HelloClient {
                         ch.pipeline().addLast(new StringEncoder());
                     }
                 })
-                .connect(new InetSocketAddress("localhost",8090))
+                .connect(new InetSocketAddress("localhost", 9080))
                 .sync()
-                .channel()
-                .writeAndFlush("hello world  1111");
+                .channel();
+
+        System.out.println(channel);
+        System.out.println(" ");
+        //channel.writeAndFlush(22222);
+
+
     }
 }
